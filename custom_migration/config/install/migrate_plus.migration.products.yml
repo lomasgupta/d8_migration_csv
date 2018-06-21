@@ -1,0 +1,88 @@
+id: products
+label: Import products
+migration_group: testgroup
+
+source:
+  plugin: csv
+  # Full path to the file.
+  path: 'public://import/products/smartphones.csv'
+  # Column delimiter. Comma (,) by default.
+  delimiter: ','
+  # Field enclosure. Double quotation marks (") by default.
+  enclosure: '"'  
+  # The number of rows at the beginning which are not data.
+  header_row_count: 1
+  # The column(s) to use as a key. Each column specified will 
+  # create an index in the migration table and too many columns 
+  # may throw an index size error.
+  keys:
+    - ID
+  # Here we identify the columns of interest in the source file. 
+  # Each numeric key is the 0-based index of the column. 
+  # For each column, the key below is the field name assigned to 
+  # the data on import, to be used in field mappings below. 
+  # The value is a user-friendly string for display by the 
+  # migration UI.
+  column_names:
+    0:
+      ID: 'Unique Id'
+    1:
+      SKU: 'SKU'  
+    2:
+      title: 'Title'
+    3:
+      Description: 'Post body'
+    4:
+      List Price: 'List Price'
+    5:
+      Sell Price: 'Sell Price'
+    6:
+      Image: 'Image'
+    7:
+      Manufacturer: 'Manufacturer'
+    8:
+      Current Stock: 'Current Stock'
+    9:
+      OS: 'OS'            
+process:
+  title: title
+  body: Description
+  field_list: List Price
+  field_sell: Sell Price
+  field_sku: SKU
+  field_stock: Current Stock
+  field_photo:
+    -
+      plugin: explode
+      source: Image
+      delimiter: ;
+    -
+      plugin: callback
+      callable: trim
+    -
+      plugin: callback
+      callable: strtoupper
+    -
+      plugin: migration
+      migration: photo
+      no_stub: true
+  field_os_type:
+    plugin: entity_generate
+    source: OS
+    entity_type: taxonomy_term
+    bundle_key: vid
+    bundle: os
+    value_key: name
+  field_manufacturer_type:
+    plugin: entity_generate
+    source: Manufacturer
+    entity_type: taxonomy_term
+    bundle_key: vid
+    bundle: manufacturer
+    value_key: name
+  type:
+    plugin: default_value
+    default_value: product
+
+destination:
+  plugin: entity:node

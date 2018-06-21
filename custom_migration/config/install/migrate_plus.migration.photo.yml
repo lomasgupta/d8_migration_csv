@@ -1,0 +1,52 @@
+dependencies:
+  module:
+    - file
+id: photo
+migration_tags:
+  - CSV
+migration_group: null
+label: Photos
+source:
+  constants:
+    source_base_path: 'public://import/products/
+    uri_file: 'public://photos'
+  plugin: csv
+  track_changes: true
+  path: public://import/products/smartphones.csv
+  header_row_count: 1
+  keys:
+    - name
+  column_names:
+    6:
+      name: Image
+
+process:
+  source_full_path:
+    -
+      plugin: concat
+      delimiter: /
+      source:
+        - constants/source_base_path
+        - name
+    -
+      plugin: urlencode
+  uri_file:
+    -
+      plugin: concat
+      delimiter: /
+      source:
+        - constants/uri_file
+        - name
+    -
+      plugin: urlencode
+  filename: name
+  uri:
+    plugin: file_copy
+    source:
+      - '@source_full_path'
+      - '@uri_file'
+destination:
+  plugin: 'entity:file'
+migration_dependencies:
+  required: {  }
+  optional: {  }
